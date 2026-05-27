@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.5277448">
+
+  <PropertyGroup>
+    <StartupCommand>npm run dev -- --host 0.0.0.0 --port 5173</StartupCommand>
+    <BuildCommand>npm run build</BuildCommand>
+    <TestCommand>npm run test</TestCommand>
+    <ShouldRunNpmInstall>true</ShouldRunNpmInstall>
+  </PropertyGroup>
+
+</Project>

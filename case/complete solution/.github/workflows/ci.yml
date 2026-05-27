@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore AgenticIncidentService.sln
+
+      - name: Build
+        run: dotnet build AgenticIncidentService.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test AgenticIncidentService.sln --configuration Release --no-build
+
+  frontend_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install + build
+        working-directory: src/WebApp
+        run: |
+          npm ci
+          npm run build

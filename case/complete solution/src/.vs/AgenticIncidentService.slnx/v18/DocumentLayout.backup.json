@@ -1,0 +1,110 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3E267B2F-906F-90D0-AE30-1D10622C2BD7}|WebApp\\webapp.esproj|c:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\webapp\\src\\app.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{3E267B2F-906F-90D0-AE30-1D10622C2BD7}|WebApp\\webapp.esproj|solutionrelative:webapp\\src\\app.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3E267B2F-906F-90D0-AE30-1D10622C2BD7}|WebApp\\webapp.esproj|c:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\webapp\\dist\\assets\\index-c-rwk1e7.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{3E267B2F-906F-90D0-AE30-1D10622C2BD7}|WebApp\\webapp.esproj|solutionrelative:webapp\\dist\\assets\\index-c-rwk1e7.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "App.tsx",
+              "DocumentMoniker": "C:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\WebApp\\src\\App.tsx",
+              "RelativeDocumentMoniker": "WebApp\\src\\App.tsx",
+              "ToolTip": "C:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\WebApp\\src\\App.tsx",
+              "RelativeToolTip": "WebApp\\src\\App.tsx",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-05-27T20:15:17.755Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "index-C-rwk1E7.js",
+              "DocumentMoniker": "C:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\WebApp\\dist\\assets\\index-C-rwk1E7.js",
+              "RelativeDocumentMoniker": "WebApp\\dist\\assets\\index-C-rwk1E7.js",
+              "ToolTip": "C:\\repos\\thomasmartinsen\\event-hackathon-20260528-private\\case\\agentic-incident-service\\src\\WebApp\\dist\\assets\\index-C-rwk1E7.js",
+              "RelativeToolTip": "WebApp\\dist\\assets\\index-C-rwk1E7.js",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAnwCcAAAAu7gAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-05-27T20:14:58.479Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:132:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:133:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:135:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:723703512:0:{83107a3e-496a-485e-b455-16ddb978e55e}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="ApiService/ApiService.csproj" />
+  <Project Path="AppHost/AppHost.csproj" />
+  <Project Path="ServiceDefaults/ServiceDefaults.csproj" Id="028209ed-08b2-45be-9f93-ffd3225061af" />
+  <Project Path="WebApp/webapp.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

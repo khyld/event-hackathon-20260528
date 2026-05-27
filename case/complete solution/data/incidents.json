@@ -1,0 +1,29 @@
+[
+  {
+    "id": "INC-001",
+    "title": "Payments failing for some customers",
+    "severity": "High",
+    "system": "Payments",
+    "description": "Intermittent 502 errors on /charge endpoint.",
+    "tags": [
+      "api",
+      "gateway",
+      "timeouts"
+    ],
+    "observedAt": "2026-05-20T09:12:00Z",
+    "source": "synthetic"
+  },
+  {
+    "id": "INC-002",
+    "title": "Login latency increased",
+    "severity": "Medium",
+    "system": "Identity",
+    "description": "p95 latency increased from 200ms to 1.2s.",
+    "tags": [
+      "performance",
+      "database"
+    ],
+    "observedAt": "2026-05-20T10:05:00Z",
+    "source": "synthetic"
+  }
+]
