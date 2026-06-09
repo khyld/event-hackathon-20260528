@@ -19,10 +19,10 @@ Do **not** use this skill for frontend-only component tests or end-to-end browse
 
 ```
 tests/
-├── UnitTests/
+├── UnitTests/                     # Add when service classes are extracted
 │   ├── UnitTests.csproj          # References ApiService.csproj
 │   └── <ServiceName>Tests.cs     # One file per service class
-└── IntegrationTests/
+└── IntegrationTests/              # Already scaffolded
     ├── IntegrationTests.csproj   # References ApiService.csproj + Mvc.Testing
     └── ApiTests.cs               # HTTP-level tests against the real pipeline
 ```
