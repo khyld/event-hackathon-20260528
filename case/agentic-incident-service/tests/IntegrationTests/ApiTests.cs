@@ -72,6 +72,8 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     [InlineData("abc")]
     [InlineData("INC001")]
     [InlineData("inc-001")]
+    [InlineData("INC-")]
+    [InlineData("INC-0001")]
     public async Task GetRecommendation_InvalidId_Returns400(string id)
     {
         var response = await _client.GetAsync($"/api/incidents/{id}/recommendation");
@@ -141,22 +143,24 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal("application/json", notFound.Content.Headers.ContentType?.MediaType);
     }
 
-    // Test 10: Incident with tags returns array, not null
+    // Test 10: Incident with empty tags returns [], not null
     [Fact]
-    public async Task GetIncident_TagsField_ReturnsArray()
+    public async Task GetIncident_EmptyTags_ReturnsEmptyArray()
     {
-        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-001");
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-003");
         var tags = body.GetProperty("tags");
         Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.Equal(0, tags.GetArrayLength());
     }
 
-    // Test 11: Incident reason field returns string, not null
+    // Test 11: Incident with missing reason returns "", not null
     [Fact]
-    public async Task GetIncident_ReasonField_ReturnsString()
+    public async Task GetIncident_MissingReason_ReturnsEmptyString()
     {
-        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-001");
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-003");
         var reason = body.GetProperty("reason");
         Assert.Equal(JsonValueKind.String, reason.ValueKind);
+        Assert.Equal("", reason.GetString());
     }
 
     // Test 12: Detail response has exactly 10 properties (no extra)
@@ -221,9 +225,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     private static int CountProperties(JsonElement element) =>
         element.EnumerateObject().Count();
 
-    private async Task<JsonElement> ReadJson(HttpResponseMessage response) =>
-        await response.Content.ReadFromJsonAsync<JsonElement>();
-
     // --- GET /health ---
 
     [Fact]
@@ -278,8 +279,28 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(body.TryGetProperty("id", out var id));
-        Assert.StartsWith("INC-", id.GetString());
+        var idStr = id.GetString()!;
+        Assert.Matches(@"^INC-\d{3}$", idStr);
         Assert.Equal("New test incident", body.GetProperty("title").GetString());
+    }
+
+    [Fact]
+    public async Task PostIncident_CreatedIncident_IsRetrievableViaGetDetail()
+    {
+        var payload = new { title = "Round-trip incident", severity = "Medium", system = "Core", description = "Verify GET works" };
+        var postResponse = await _client.PostAsJsonAsync("/api/incidents", payload);
+        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+        var created = await postResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var createdId = created.GetProperty("id").GetString()!;
+
+        var detailResponse = await _client.GetAsync($"/api/incidents/{createdId}");
+        Assert.Equal(HttpStatusCode.OK, detailResponse.StatusCode);
+
+        var detail = await detailResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(createdId, detail.GetProperty("id").GetString());
+        Assert.Equal("Round-trip incident", detail.GetProperty("title").GetString());
+        Assert.Equal(10, CountProperties(detail));
     }
 
     [Fact]
@@ -347,5 +368,102 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         var list = await _client.GetFromJsonAsync<JsonElement>("/api/incidents");
         var ids = list.EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToArray();
         Assert.Contains(createdId, ids);
+    }
+
+    // --- Input length limit tests ---
+
+    [Fact]
+    public async Task PostIncident_TitleTooLong_Returns400()
+    {
+        var payload = new { title = new string('A', 201), severity = "High", system = "Billing", description = "Desc" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("title", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_DescriptionTooLong_Returns400()
+    {
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = new string('B', 2001) };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("description", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_TooManyTags_Returns400()
+    {
+        var tags = Enumerable.Range(0, 11).Select(i => $"tag{i}").ToArray();
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = "Desc", tags };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("tags", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_TagTooLong_Returns400()
+    {
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = "Desc", tags = new[] { new string('C', 51) } };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("tags", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_FieldsAtMaxLength_Returns201()
+    {
+        var payload = new { title = new string('A', 200), severity = "Low", system = new string('B', 100), description = new string('C', 2000) };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    // --- Error message sanitization tests ---
+
+    [Fact]
+    public async Task GetIncident_InvalidId_ErrorDoesNotEchoInput()
+    {
+        var maliciousId = "EVIL-injection-payload";
+        var response = await _client.GetAsync($"/api/incidents/{maliciousId}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("EVIL", body);
+        Assert.DoesNotContain("injection", body);
+    }
+
+    [Fact]
+    public async Task GetIncident_UnknownId_ErrorDoesNotEchoInput()
+    {
+        var response = await _client.GetAsync("/api/incidents/INC-999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("INC-999", body);
+    }
+
+    // Test 14: Recommendation is identical across separate app instances (simulates restart)
+    [Fact]
+    public async Task GetRecommendation_AcrossAppRestart_ReturnsIdenticalOutput()
+    {
+        // First app instance
+        await using var factory1 = new WebApplicationFactory<Program>();
+        using var client1 = factory1.CreateClient();
+        var r1 = await client1.GetStringAsync("/api/incidents/INC-001/recommendation");
+
+        // Second app instance (simulates restart)
+        await using var factory2 = new WebApplicationFactory<Program>();
+        using var client2 = factory2.CreateClient();
+        var r2 = await client2.GetStringAsync("/api/incidents/INC-001/recommendation");
+
+        Assert.Equal(r1, r2);
     }
 }
