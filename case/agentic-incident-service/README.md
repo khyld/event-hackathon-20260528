@@ -7,6 +7,42 @@ This repository is a **golden/reference implementation** for the hackathon case:
 - Unit + Integration tests
 - CI builds both .NET and the frontend
 
+## Getting Started
+
+### Prerequisites
+- .NET 10 SDK
+- Node.js 18+
+- Aspire CLI (recommended)
+
+### Run the AppHost
+From the repo root:
+
+```bash
+cd case/agentic-incident-service
+aspire run --project src/AppHost
+```
+
+If you prefer not to use Aspire CLI, you can also run:
+
+```bash
+cd case/agentic-incident-service
+dotnet run --project src/AppHost
+```
+
+### Run tests
+From the repo root:
+
+```bash
+cd case/complete solution
+./scripts/run-tests.sh
+```
+
+You can also run the tests directly with:
+
+```bash
+dotnet test AgenticIncidentService.sln
+```
+
 ## Run locally
 
 ### Prereqs

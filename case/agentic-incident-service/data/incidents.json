@@ -5,12 +5,11 @@
     "severity": "High",
     "system": "Payments",
     "description": "Intermittent 502 errors on /charge endpoint.",
-    "tags": [
-      "api",
-      "gateway",
-      "timeouts"
-    ],
+    "tags": ["api", "gateway", "timeouts"],
     "observedAt": "2026-05-20T09:12:00Z",
+    "category": "Availability",
+    "priority": "P1",
+    "reason": "Multiple customers affected by payment failures during peak hours.",
     "source": "synthetic"
   },
   {
@@ -19,11 +18,11 @@
     "severity": "Medium",
     "system": "Identity",
     "description": "p95 latency increased from 200ms to 1.2s.",
-    "tags": [
-      "performance",
-      "database"
-    ],
+    "tags": ["performance", "database"],
     "observedAt": "2026-05-20T10:05:00Z",
+    "category": "Performance",
+    "priority": "P2",
+    "reason": "Latency regression detected after recent database migration.",
     "source": "synthetic"
   }
 ]
