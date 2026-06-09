@@ -24,5 +24,17 @@
     "priority": "P2",
     "reason": "Latency regression detected after recent database migration.",
     "source": "synthetic"
+  },
+  {
+    "id": "INC-003",
+    "title": "Audit log export stalled",
+    "severity": "Low",
+    "system": "Compliance",
+    "description": "Scheduled audit log export has not completed for 48 hours.",
+    "tags": [],
+    "observedAt": "2026-05-21T14:30:00Z",
+    "category": "Operations",
+    "priority": "P3",
+    "source": "synthetic"
   }
 ]

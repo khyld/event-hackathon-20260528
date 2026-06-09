@@ -72,6 +72,8 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     [InlineData("abc")]
     [InlineData("INC001")]
     [InlineData("inc-001")]
+    [InlineData("INC-")]
+    [InlineData("INC-0001")]
     public async Task GetRecommendation_InvalidId_Returns400(string id)
     {
         var response = await _client.GetAsync($"/api/incidents/{id}/recommendation");
@@ -141,22 +143,24 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal("application/json", notFound.Content.Headers.ContentType?.MediaType);
     }
 
-    // Test 10: Incident with tags returns array, not null
+    // Test 10: Incident with empty tags returns [], not null
     [Fact]
-    public async Task GetIncident_TagsField_ReturnsArray()
+    public async Task GetIncident_EmptyTags_ReturnsEmptyArray()
     {
-        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-001");
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-003");
         var tags = body.GetProperty("tags");
         Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.Equal(0, tags.GetArrayLength());
     }
 
-    // Test 11: Incident reason field returns string, not null
+    // Test 11: Incident with missing reason returns "", not null
     [Fact]
-    public async Task GetIncident_ReasonField_ReturnsString()
+    public async Task GetIncident_MissingReason_ReturnsEmptyString()
     {
-        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-001");
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents/INC-003");
         var reason = body.GetProperty("reason");
         Assert.Equal(JsonValueKind.String, reason.ValueKind);
+        Assert.Equal("", reason.GetString());
     }
 
     // Test 12: Detail response has exactly 10 properties (no extra)
@@ -221,9 +225,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     private static int CountProperties(JsonElement element) =>
         element.EnumerateObject().Count();
 
-    private async Task<JsonElement> ReadJson(HttpResponseMessage response) =>
-        await response.Content.ReadFromJsonAsync<JsonElement>();
-
     // --- GET /health ---
 
     [Fact]
@@ -278,8 +279,28 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(body.TryGetProperty("id", out var id));
-        Assert.StartsWith("INC-", id.GetString());
+        var idStr = id.GetString()!;
+        Assert.Matches(@"^INC-\d{3}$", idStr);
         Assert.Equal("New test incident", body.GetProperty("title").GetString());
+    }
+
+    [Fact]
+    public async Task PostIncident_CreatedIncident_IsRetrievableViaGetDetail()
+    {
+        var payload = new { title = "Round-trip incident", severity = "Medium", system = "Core", description = "Verify GET works" };
+        var postResponse = await _client.PostAsJsonAsync("/api/incidents", payload);
+        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+        var created = await postResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var createdId = created.GetProperty("id").GetString()!;
+
+        var detailResponse = await _client.GetAsync($"/api/incidents/{createdId}");
+        Assert.Equal(HttpStatusCode.OK, detailResponse.StatusCode);
+
+        var detail = await detailResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(createdId, detail.GetProperty("id").GetString());
+        Assert.Equal("Round-trip incident", detail.GetProperty("title").GetString());
+        Assert.Equal(10, CountProperties(detail));
     }
 
     [Fact]
