@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using AgenticIncidentService.ApiService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -55,6 +56,38 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/api/incidents", () =>
     Results.Ok(incidents.Select(i => new { id = i.Id, title = i.Title })));
 
+app.MapPost("/api/incidents", (CreateIncidentRequest request) =>
+{
+    var errors = new Dictionary<string, string>();
+    if (string.IsNullOrWhiteSpace(request.Title)) errors["title"] = "Title is required";
+    if (string.IsNullOrWhiteSpace(request.System)) errors["system"] = "System is required";
+    if (string.IsNullOrWhiteSpace(request.Description)) errors["description"] = "Description is required";
+
+    var validSeverities = new[] { "Low", "Medium", "High", "Critical" };
+    if (!validSeverities.Contains(request.Severity, StringComparer.OrdinalIgnoreCase))
+        errors["severity"] = "Severity must be one of: Low, Medium, High, Critical";
+
+    if (errors.Count > 0)
+        return Results.BadRequest(new { errors });
+
+    var id = $"INC-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+    var created = new IncidentRecord(
+        Id: id,
+        Title: request.Title.Trim(),
+        Severity: request.Severity,
+        System: request.System.Trim(),
+        Description: request.Description.Trim(),
+        Tags: (request.Tags ?? []).Select(t => t.Trim()).Where(t => t.Length > 0).ToArray(),
+        ObservedAt: DateTimeOffset.UtcNow.ToString("o"),
+        Category: "Unknown",
+        Priority: "P3",
+        Reason: null,
+        Source: "user");
+
+    incidents.Add(created);
+    return Results.Created($"/api/incidents/{id}", new { id = created.Id, title = created.Title });
+});
+
 app.MapGet("/api/incidents/{id}", (string id) =>
 {
     var invalid = ValidateId(id);
@@ -86,40 +119,17 @@ app.MapGet("/api/incidents/{id}/recommendation", (string id) =>
     var notFound = FindIncident(id, out var incident);
     if (notFound is not null) return notFound;
 
-    return Results.Ok(GenerateRecommendation(incident!));
+    var rec = RecommendationEngine.Generate(incident!);
+    return Results.Ok(new
+    {
+        incidentId = rec.IncidentId,
+        summary = rec.Summary,
+        nextAction = rec.NextAction,
+        confidence = rec.Confidence
+    });
 });
 
 app.Run();
-
-// Deterministic recommendation — pure function of the incident record.
-static object GenerateRecommendation(IncidentRecord incident)
-{
-    var summary = incident.Category switch
-    {
-        "Availability" => $"Investigate the {incident.System.ToLowerInvariant()} dependency and recent deployment changes.",
-        "Performance" => $"Analyze {incident.System.ToLowerInvariant()} performance metrics and recent configuration changes.",
-        "Security" => $"Review {incident.System.ToLowerInvariant()} access logs and recent security events.",
-        _ => $"Gather logs and metrics for {incident.System.ToLowerInvariant()} and identify recent changes."
-    };
-
-    var nextAction = incident.Category switch
-    {
-        "Availability" => $"Check gateway error logs, retry metrics, and the latest deployment for the {incident.System.ToLowerInvariant()} service.",
-        "Performance" => $"Review p95/p99 latency, database query plans, and recent migrations for the {incident.System.ToLowerInvariant()} service.",
-        "Security" => $"Audit authentication logs, token expiry, and access policy changes for the {incident.System.ToLowerInvariant()} service.",
-        _ => $"Collect relevant telemetry and narrow the blast radius for the {incident.System.ToLowerInvariant()} service."
-    };
-
-    var confidence = incident.Priority is "P1" or "P0" ? "High" : "Medium";
-
-    return new
-    {
-        incidentId = incident.Id,
-        summary,
-        nextAction,
-        confidence
-    };
-}
 
 public partial class Program { }
 
@@ -135,3 +145,10 @@ public record IncidentRecord(
     string Priority,
     string? Reason,
     string? Source);
+
+public record CreateIncidentRequest(
+    string Title,
+    string Severity,
+    string System,
+    string Description,
+    string[]? Tags);

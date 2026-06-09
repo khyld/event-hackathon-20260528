@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
@@ -222,4 +223,129 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
     private async Task<JsonElement> ReadJson(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>();
+
+    // --- GET /health ---
+
+    [Fact]
+    public async Task Health_Returns200WithStatusOk()
+    {
+        var response = await _client.GetAsync("/health");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("ok", body.GetProperty("status").GetString());
+    }
+
+    // --- GET /api/incidents (list) ---
+
+    [Fact]
+    public async Task GetIncidents_Returns200WithArray()
+    {
+        var response = await _client.GetAsync("/api/incidents");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(JsonValueKind.Array, body.ValueKind);
+        Assert.True(body.GetArrayLength() >= 2, "Expected at least 2 incidents from seed data");
+    }
+
+    [Fact]
+    public async Task GetIncidents_EachItemHasIdAndTitle()
+    {
+        var body = await _client.GetFromJsonAsync<JsonElement>("/api/incidents");
+        foreach (var item in body.EnumerateArray())
+        {
+            Assert.True(item.TryGetProperty("id", out _), "Missing 'id' field");
+            Assert.True(item.TryGetProperty("title", out _), "Missing 'title' field");
+        }
+    }
+
+    // --- POST /api/incidents ---
+
+    [Fact]
+    public async Task PostIncident_ValidRequest_Returns201Created()
+    {
+        var payload = new { title = "New test incident", severity = "High", system = "Billing", description = "Test description" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.NotNull(response.Headers.Location);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.TryGetProperty("id", out var id));
+        Assert.StartsWith("INC-", id.GetString());
+        Assert.Equal("New test incident", body.GetProperty("title").GetString());
+    }
+
+    [Fact]
+    public async Task PostIncident_ValidRequest_AppearsInSubsequentList()
+    {
+        var payload = new { title = "Trackable incident", severity = "Low", system = "Audit", description = "For list check" };
+        var postResponse = await _client.PostAsJsonAsync("/api/incidents", payload);
+        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+        var list = await _client.GetFromJsonAsync<JsonElement>("/api/incidents");
+        var titles = list.EnumerateArray().Select(e => e.GetProperty("title").GetString()).ToArray();
+        Assert.Contains("Trackable incident", titles);
+    }
+
+    [Fact]
+    public async Task PostIncident_MissingTitle_Returns400WithErrors()
+    {
+        var payload = new { title = "", severity = "High", system = "Billing", description = "Desc" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.TryGetProperty("errors", out var errors));
+        Assert.True(errors.TryGetProperty("title", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_InvalidSeverity_Returns400WithErrors()
+    {
+        var payload = new { title = "Test", severity = "Extreme", system = "Billing", description = "Desc" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.TryGetProperty("errors", out var errors));
+        Assert.True(errors.TryGetProperty("severity", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_MissingMultipleFields_Returns400WithAllErrors()
+    {
+        var payload = new { title = "", severity = "bogus", system = "", description = "" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var errors = body.GetProperty("errors");
+        Assert.True(errors.TryGetProperty("title", out _));
+        Assert.True(errors.TryGetProperty("system", out _));
+        Assert.True(errors.TryGetProperty("description", out _));
+        Assert.True(errors.TryGetProperty("severity", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_WithTags_TagsArePreserved()
+    {
+        var payload = new { title = "Tagged incident", severity = "Medium", system = "Core", description = "Has tags", tags = new[] { "network", "dns" } };
+        var postResponse = await _client.PostAsJsonAsync("/api/incidents", payload);
+        Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+        var createdBody = await postResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var createdId = createdBody.GetProperty("id").GetString();
+
+        // Verify the incident is in the list
+        var list = await _client.GetFromJsonAsync<JsonElement>("/api/incidents");
+        var ids = list.EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToArray();
+        Assert.Contains(createdId, ids);
+    }
 }
