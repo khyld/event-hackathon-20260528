@@ -348,4 +348,84 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         var ids = list.EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToArray();
         Assert.Contains(createdId, ids);
     }
+
+    // --- Input length limit tests ---
+
+    [Fact]
+    public async Task PostIncident_TitleTooLong_Returns400()
+    {
+        var payload = new { title = new string('A', 201), severity = "High", system = "Billing", description = "Desc" };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("title", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_DescriptionTooLong_Returns400()
+    {
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = new string('B', 2001) };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("description", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_TooManyTags_Returns400()
+    {
+        var tags = Enumerable.Range(0, 11).Select(i => $"tag{i}").ToArray();
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = "Desc", tags };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("tags", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_TagTooLong_Returns400()
+    {
+        var payload = new { title = "Test", severity = "High", system = "Billing", description = "Desc", tags = new[] { new string('C', 51) } };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("errors").TryGetProperty("tags", out _));
+    }
+
+    [Fact]
+    public async Task PostIncident_FieldsAtMaxLength_Returns201()
+    {
+        var payload = new { title = new string('A', 200), severity = "Low", system = new string('B', 100), description = new string('C', 2000) };
+        var response = await _client.PostAsJsonAsync("/api/incidents", payload);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    // --- Error message sanitization tests ---
+
+    [Fact]
+    public async Task GetIncident_InvalidId_ErrorDoesNotEchoInput()
+    {
+        var maliciousId = "EVIL-injection-payload";
+        var response = await _client.GetAsync($"/api/incidents/{maliciousId}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("EVIL", body);
+        Assert.DoesNotContain("injection", body);
+    }
+
+    [Fact]
+    public async Task GetIncident_UnknownId_ErrorDoesNotEchoInput()
+    {
+        var response = await _client.GetAsync("/api/incidents/INC-999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("INC-999", body);
+    }
 }

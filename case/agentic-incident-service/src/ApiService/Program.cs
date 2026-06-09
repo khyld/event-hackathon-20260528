@@ -21,8 +21,11 @@ builder.Services.AddCors(o =>
 var app = builder.Build();
 
 app.UseCors();
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Load incidents from data/incidents.json (single source of truth)
 var dataPath = Path.Combine(AppContext.BaseDirectory, "data", "incidents.json");
@@ -39,7 +42,7 @@ var idPattern = new Regex(@"^INC-\d{3}$", RegexOptions.Compiled);
 IResult ValidateId(string id)
 {
     if (!idPattern.IsMatch(id))
-        return Results.Json(new { error = $"Invalid incident ID format: '{id}'. Expected INC-NNN.", status = 400 }, statusCode: 400);
+        return Results.Json(new { error = "Invalid incident ID format. Expected INC-NNN.", status = 400 }, statusCode: 400);
     return null!;
 }
 
@@ -47,7 +50,7 @@ IResult? FindIncident(string id, out IncidentRecord? incident)
 {
     incident = incidents.FirstOrDefault(i => i.Id == id);
     if (incident is null)
-        return Results.Json(new { error = $"Incident '{id}' not found.", status = 404 }, statusCode: 404);
+        return Results.Json(new { error = "Incident not found.", status = 404 }, statusCode: 404);
     return null;
 }
 
@@ -60,8 +63,16 @@ app.MapPost("/api/incidents", (CreateIncidentRequest request) =>
 {
     var errors = new Dictionary<string, string>();
     if (string.IsNullOrWhiteSpace(request.Title)) errors["title"] = "Title is required";
+    else if (request.Title.Length > 200) errors["title"] = "Title must be 200 characters or fewer";
     if (string.IsNullOrWhiteSpace(request.System)) errors["system"] = "System is required";
+    else if (request.System.Length > 100) errors["system"] = "System must be 100 characters or fewer";
     if (string.IsNullOrWhiteSpace(request.Description)) errors["description"] = "Description is required";
+    else if (request.Description.Length > 2000) errors["description"] = "Description must be 2000 characters or fewer";
+
+    if (request.Tags is { Length: > 10 })
+        errors["tags"] = "A maximum of 10 tags is allowed";
+    else if (request.Tags?.Any(t => t.Length > 50) == true)
+        errors["tags"] = "Each tag must be 50 characters or fewer";
 
     var validSeverities = new[] { "Low", "Medium", "High", "Critical" };
     if (!validSeverities.Contains(request.Severity, StringComparer.OrdinalIgnoreCase))
