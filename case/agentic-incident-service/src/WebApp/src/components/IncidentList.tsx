@@ -29,7 +29,7 @@ export default function IncidentList({
   }, [])
 
   if (loading) return <div>Loading incidents…</div>
-  if (error) return <div style={{ color: 'crimson' }}>Error: {error}</div>
+  if (error) return <div style={{ color: 'var(--error)' }}>Error: {error}</div>
 
   return (
     <div>
@@ -47,8 +47,9 @@ export default function IncidentList({
                   padding: 10,
                   marginBottom: 8,
                   borderRadius: 8,
-                  border: '1px solid #ddd',
-                  background: active ? '#f0f6ff' : 'white',
+                  border: '1px solid var(--border)',
+                  background: active ? 'var(--bg-active)' : 'var(--bg-card)',
+                  color: 'var(--text)',
                   cursor: 'pointer',
                 }}
               >
