@@ -20,7 +20,7 @@ app.UseSwaggerUI();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-app.MapGet("/api/incidents", () => new[] { new { id = "INC-1", title = "Sample" } });
+app.MapGet("/api/incidents", () => new[] { new { id = "INC-001", title = "Sample" } });
 
 app.Run();
 

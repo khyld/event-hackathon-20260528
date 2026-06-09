@@ -40,7 +40,7 @@ Response body:
   "category": "Availability",
   "priority": "P1",
   "description": "Intermittent 502 errors on /charge endpoint.",
-  "reason": "The incident is affecting payment transactions and matches the synthetic incident dataset."
+  "reason": "Multiple customers affected by payment failures during peak hours."
 }
 ```
 

@@ -11,10 +11,10 @@ This repository is a **golden/reference implementation** for the hackathon case:
 
 ### Prerequisites
 - .NET 10 SDK
-- Node.js 18+
-- Aspire CLI (recommended)
+- Node.js (18+)
+- Aspire CLI installed (recommended)
 
-### Run the AppHost
+### Start with Aspire
 From the repo root:
 
 ```bash
@@ -29,52 +29,45 @@ cd case/agentic-incident-service
 dotnet run --project src/AppHost
 ```
 
-### Run tests
-From the repo root:
-
-```bash
-cd case/complete solution
-./scripts/run-tests.sh
-```
-
-You can also run the tests directly with:
-
-```bash
-dotnet test AgenticIncidentService.sln
-```
-
-## Run locally
-
-### Prereqs
-- .NET 10 SDK
-- Node.js (18+)
-- Aspire CLI installed (recommended)
-
-### Start everything with Aspire
-From repo root:
-
-```bash
-aspire run --project src/AppHost
-```
-
 Alternatively, run the API and frontend separately:
 
 ```bash
 # API
- dotnet run --project src/ApiService
+dotnet run --project src/ApiService
 
 # Frontend
- cd src/WebApp
- npm install
- npm run dev
+cd src/WebApp
+npm install
+npm run dev
 ```
 
+### Run tests
+Using the reference solution test script:
+
+```bash
+cd "case/complete solution"
+./scripts/run-tests.sh
+```
+
+Or run directly:
+
+```bash
+cd case/agentic-incident-service
+dotnet test src/AgenticIncidentService.slnx
+```
+
+> **Note:** Test projects for the active case are not yet scaffolded. The commands above run tests from the reference solution.
+
 ## API endpoints
+
+**Implemented:**
 - `GET /health`
 - `GET /api/incidents`
-- `GET /api/incidents/{id}`
+
+**Planned (not yet implemented):**
+- `GET /api/incidents/{id}` — see [spec](specs/incident-triage/spec.md)
 - `POST /api/incidents`
-- `GET /api/incidents/{id}/recommendation`
+- `GET /api/incidents/{id}/recommendation` — see [spec](specs/incident-triage/spec.md)
 
 ## Hackathon alignment
 - Repo instructions: `.github/copilot-instructions.md`
