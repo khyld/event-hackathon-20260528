@@ -428,4 +428,21 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
         var body = await response.Content.ReadAsStringAsync();
         Assert.DoesNotContain("INC-999", body);
     }
+
+    // Test 14: Recommendation is identical across separate app instances (simulates restart)
+    [Fact]
+    public async Task GetRecommendation_AcrossAppRestart_ReturnsIdenticalOutput()
+    {
+        // First app instance
+        await using var factory1 = new WebApplicationFactory<Program>();
+        using var client1 = factory1.CreateClient();
+        var r1 = await client1.GetStringAsync("/api/incidents/INC-001/recommendation");
+
+        // Second app instance (simulates restart)
+        await using var factory2 = new WebApplicationFactory<Program>();
+        using var client2 = factory2.CreateClient();
+        var r2 = await client2.GetStringAsync("/api/incidents/INC-001/recommendation");
+
+        Assert.Equal(r1, r2);
+    }
 }
