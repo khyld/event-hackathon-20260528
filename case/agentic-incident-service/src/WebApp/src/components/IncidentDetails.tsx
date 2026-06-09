@@ -53,53 +53,53 @@ export default function IncidentDetails({ id }: { id: string | null }) {
 
   if (!id) return <div>Select an incident.</div>
   if (loading) return <div>Loading details…</div>
-  if (error) return <div style={{ color: 'crimson' }}>Error: {error}</div>
-  if (notFound) return <div style={{ color: '#888' }}>Incident not found.</div>
+  if (error) return <div style={{ color: 'var(--error)' }}>Error: {error}</div>
+  if (notFound) return <div style={{ color: 'var(--text-muted)' }}>Incident not found.</div>
   if (!details) return <div>No details.</div>
 
   return (
     <div>
       <h2 style={{ marginTop: 0 }}>Details</h2>
-      <div style={{ padding: 12, border: '1px solid #ddd', borderRadius: 8 }}>
+      <div style={{ padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <strong>{details.id}</strong>
           <span>{details.priority}</span>
         </div>
         <div style={{ marginTop: 6 }}>{details.title}</div>
-        <div style={{ color: '#555', fontSize: 12, marginTop: 6 }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 6 }}>
           {details.system} • {details.severity} • {details.category}
         </div>
-        <div style={{ color: '#555', fontSize: 12, marginTop: 4 }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4 }}>
           Observed: {new Date(details.observedAt).toLocaleString()}
         </div>
         {details.tags.length > 0 && (
           <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {details.tags.map(t => (
-              <span key={t} style={{ background: '#eee', borderRadius: 4, padding: '2px 6px', fontSize: 12 }}>{t}</span>
+              <span key={t} style={{ background: 'var(--bg-tag)', borderRadius: 4, padding: '2px 6px', fontSize: 12 }}>{t}</span>
             ))}
           </div>
         )}
         <div style={{ marginTop: 10 }}>
           <strong>Description</strong>
-          <div style={{ color: '#333' }}>{details.description}</div>
+          <div style={{ color: 'var(--text-detail)' }}>{details.description}</div>
         </div>
         <div style={{ marginTop: 10 }}>
           <strong>Triage reason</strong>
-          <div style={{ color: '#333' }}>{details.reason}</div>
+          <div style={{ color: 'var(--text-detail)' }}>{details.reason}</div>
         </div>
       </div>
 
       {rec && (
-        <div style={{ marginTop: 12, padding: 12, border: '1px solid #ddd', borderRadius: 8 }}>
+        <div style={{ marginTop: 12, padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-card)' }}>
           <strong>Recommendation</strong>
-          <div style={{ marginTop: 6, color: '#333' }}>{rec.summary}</div>
+          <div style={{ marginTop: 6, color: 'var(--text-detail)' }}>{rec.summary}</div>
           <div style={{ marginTop: 6 }}>{rec.nextAction}</div>
-          <div style={{ marginTop: 6, color: '#555', fontSize: 12 }}>Confidence: {rec.confidence}</div>
+          <div style={{ marginTop: 6, color: 'var(--text-muted)', fontSize: 12 }}>Confidence: {rec.confidence}</div>
         </div>
       )}
 
       {recError && (
-        <div style={{ marginTop: 12, padding: 12, border: '1px solid #ddd', borderRadius: 8, color: 'crimson' }}>
+        <div style={{ marginTop: 12, padding: 12, border: '1px solid var(--border)', borderRadius: 8, color: 'var(--error)' }}>
           <strong>Recommendation</strong>
           <div style={{ marginTop: 6 }}>Failed to load recommendation.</div>
         </div>

@@ -4,6 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Agentic Incident Service</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --bg-card: #ffffff;
+        --bg-active: #f0f6ff;
+        --bg-tag: #eee;
+        --text: #111;
+        --text-muted: #555;
+        --text-detail: #333;
+        --border: #ddd;
+        --error: crimson;
+        --rec-bg: transparent;
+      }
+      html[data-theme="dark"] {
+        --bg: #1a1a2e;
+        --bg-card: #16213e;
+        --bg-active: #0f3460;
+        --bg-tag: #333;
+        --text: #e0e0e0;
+        --text-muted: #aaa;
+        --text-detail: #ccc;
+        --border: #444;
+        --error: #ff6b6b;
+        --rec-bg: #16213e;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        transition: background 0.2s, color 0.2s;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
