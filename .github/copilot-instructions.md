@@ -23,7 +23,7 @@
 - Add or update tests when behavior changes.
 - Prefer deterministic, simple tests for API and triage logic.
 - If you touch the reference solution under `case/complete solution/`, use its test script when available:
-  - `cd case/complete solution`
+  - `cd "case/complete solution"`
   - `./scripts/run-tests.sh`
 
 ## Security and quality basics

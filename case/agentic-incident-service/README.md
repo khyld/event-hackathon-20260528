@@ -56,7 +56,12 @@ cd case/agentic-incident-service
 dotnet test src/AgenticIncidentService.slnx
 ```
 
-> **Note:** Test projects for the active case are not yet scaffolded. The commands above run tests from the reference solution.
+You can also run the integration tests directly:
+
+```bash
+cd case/agentic-incident-service
+dotnet test tests/IntegrationTests
+```
 
 ## API endpoints
 
@@ -64,9 +69,8 @@ dotnet test src/AgenticIncidentService.slnx
 - `GET /health`
 - `GET /api/incidents`
 
-**Planned (not yet implemented):**
+**Implemented:**
 - `GET /api/incidents/{id}` — see [spec](specs/incident-triage/spec.md)
-- `POST /api/incidents`
 - `GET /api/incidents/{id}/recommendation` — see [spec](specs/incident-triage/spec.md)
 
 ## Hackathon alignment
